@@ -5,10 +5,58 @@ async function getLead(id) {
   return result.rows[0] || undefined;
 }
 
-async function createLead(lead) {
+async function getLeadByEmail(email) {
   const result = await query(
-    'INSERT INTO leads (name, email, phone, company, industry, source, status, assigned_to_id, notes, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW()) RETURNING *',
-    [lead.name, lead.email, lead.phone, lead.company, lead.industry, lead.source, lead.status || 'new', lead.assignedToId, lead.notes]
+    'SELECT * FROM leads WHERE LOWER(email) = LOWER($1)',
+    [email]
+  );
+  return result.rows[0];
+}
+
+async function createLead(lead) {
+  // Check for existing lead with same email
+  const existingLead = await getLeadByEmail(lead.email);
+  if (existingLead) {
+    throw {
+      name: 'DuplicateError',
+      message: 'A lead with this email already exists',
+      code: 'DUPLICATE_EMAIL'
+    };
+  }
+
+  const result = await query(
+    `INSERT INTO leads (
+      name, 
+      email, 
+      phone, 
+      company, 
+      industry,
+      source, 
+      status, 
+      assigned_to_id,
+      notes,
+      budget, 
+      expected_close_date,
+      created_by_id,
+      created_at,
+      updated_at
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *`,
+    [
+      lead.name,
+      lead.email,
+      lead.phone,
+      lead.company,
+      lead.industry,
+      lead.source,
+      lead.status || 'new',
+      lead.assignedToId,
+      lead.notes,
+      lead.budget,
+      lead.expectedCloseDate,
+      lead.created_by_id,
+      lead.created_at,
+      lead.updated_at
+    ]
   );
   return result.rows[0];
 }
@@ -40,6 +88,7 @@ async function getLeadsByAssignee(userId) {
 
 module.exports = {
   getLead,
+  getLeadByEmail,
   createLead,
   updateLead,
   deleteLead,

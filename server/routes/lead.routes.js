@@ -16,6 +16,8 @@ const router = express.Router();
  *   get:
  *     summary: List all leads
  *     tags: [Leads]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: List of leads
@@ -27,11 +29,27 @@ const router = express.Router();
  *                 status: { type: integer, example: 200 }
  *                 success: { type: boolean, example: true }
  *                 message: { type: string, example: "Request successful" }
- *                 data: { type: array, items: { type: object } }
+ *                 data: 
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id: { type: string, format: uuid }
+ *                       name: { type: string }
+ *                       email: { type: string }
+ *                       phone: { type: string }
+ *                       company: { type: string }
+ *                       industry: { type: string }
+ *                       source: { type: string }
+ *                       status: { type: string }
+ *                       created_by_id: { type: string, format: uuid }
+ *                       created_at: { type: string, format: date-time }
+ *       401:
+ *         description: Unauthorized
  *       500:
  *         description: Server error
  */
-router.get('/', listLeads);
+router.get('/', authenticate, listLeads);
 
 /**
  * @swagger
@@ -45,17 +63,34 @@ router.get('/', listLeads);
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: integer }
+ *         schema: { type: string, format: uuid }
  *         description: Lead ID
  *     responses:
  *       200:
  *         description: Lead details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status: { type: integer, example: 200 }
+ *                 success: { type: boolean, example: true }
+ *                 message: { type: string }
+ *                 data: 
+ *                   type: object
+ *                   properties:
+ *                     id: { type: string, format: uuid }
+ *                     name: { type: string }
+ *                     email: { type: string }
+ *                     phone: { type: string }
+ *                     company: { type: string }
+ *                     industry: { type: string }
+ *                     source: { type: string }
+ *                     status: { type: string }
  *       401:
  *         description: Unauthorized
  *       404:
  *         description: Lead not found
- *       500:
- *         description: Server error
  */
 router.get('/:id', authenticate, listLead);
 
@@ -65,31 +100,36 @@ router.get('/:id', authenticate, listLead);
  *   post:
  *     summary: Create a new lead
  *     tags: [Leads]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required: [name, email]
  *             properties:
- *               name: { type: string }
- *               email: { type: string }
- *               phone: { type: string }
+ *               name: { type: string, minLength: 2 }
+ *               email: { type: string, format: email }
+ *               phone: { type: string, pattern: '^\+?[\d\s-]{10,}$' }
  *               company: { type: string }
  *               industry: { type: string }
- *               source: { type: string }
- *               status: { type: string }
- *               assignedToId: { type: integer }
+ *               source: { type: string, enum: [Web, Referral, LinkedIn, Email, Cold Call, Event, Other] }
+ *               status: { type: string, enum: [New, Contacted, Qualified, Proposal, Negotiation, Won, Lost] }
+ *               assignedToId: { type: string, format: uuid }
  *               notes: { type: string }
+ *               budget: { type: number, minimum: 0 }
+ *               expectedCloseDate: { type: string, format: date-time }
  *     responses:
  *       201:
- *         description: Lead created
- *       422:
- *         description: Invalid input
- *       500:
- *         description: Server error
+ *         description: Lead created successfully
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
  */
-router.post('/', createlead);
+router.post('/', authenticate, createlead);
 
 /**
  * @swagger
@@ -103,33 +143,32 @@ router.post('/', createlead);
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: integer }
+ *         schema: { type: string, format: uuid }
+ *         description: Lead ID (UUID)
  *     requestBody:
  *       content:
  *         application/json:
  *           schema:
  *             type: object
  *             properties:
- *               name: { type: string }
- *               email: { type: string }
- *               phone: { type: string }
+ *               name: { type: string, minLength: 2 }
+ *               email: { type: string, format: email }
+ *               phone: { type: string, pattern: '^\+?[\d\s-]{10,}$' }
  *               company: { type: string }
  *               industry: { type: string }
- *               source: { type: string }
- *               status: { type: string }
- *               assignedToId: { type: integer }
+ *               source: { type: string, enum: [Web, Referral, LinkedIn, Email, Cold Call, Event, Other] }
+ *               status: { type: string, enum: [New, Contacted, Qualified, Proposal, Negotiation, Won, Lost] }
+ *               assignedToId: { type: string, format: uuid }
  *               notes: { type: string }
+ *               budget: { type: number, minimum: 0 }
+ *               expectedCloseDate: { type: string, format: date-time }
  *     responses:
  *       200:
- *         description: Lead updated
+ *         description: Lead updated successfully
  *       401:
  *         description: Unauthorized
  *       404:
  *         description: Lead not found
- *       422:
- *         description: Invalid input
- *       500:
- *         description: Server error
  */
 router.put('/:id', authenticate, updatelead);
 
@@ -145,18 +184,17 @@ router.put('/:id', authenticate, updatelead);
  *       - in: path
  *         name: id
  *         required: true
- *         schema: { type: integer }
+ *         schema: { type: string, format: uuid }
+ *         description: Lead ID (UUID)
  *     responses:
  *       200:
- *         description: Lead deleted
+ *         description: Lead deleted successfully
  *       401:
  *         description: Unauthorized
  *       403:
  *         description: Forbidden
  *       404:
  *         description: Lead not found
- *       500:
- *         description: Server error
  */
 router.delete('/:id', authenticate, authorize(['admin', 'manager']), deletelead);
 

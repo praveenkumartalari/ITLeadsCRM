@@ -2,15 +2,21 @@ const { z } = require('zod');
 
 // Lead Schema
 const insertLeadSchema = z.object({
-  name: z.string(),
-  email: z.string().email(),
-  phone: z.string().optional(),
-  company: z.string().optional(),
-  industry: z.string().optional(),
-  source: z.string().optional(),
-  status: z.string().default('new'),
-  assignedToId: z.number().int().optional(),
-  notes: z.string().optional(),
+    name: z.string().min(2, "Name must be at least 2 characters"),
+    email: z.string().email("Invalid email format"),
+    phone: z.string().optional(),
+    company: z.string().optional(),
+    industry: z.string().optional(),
+    source: z.string().optional(),
+    status: z.string().default('new'),
+    assignedToId: z.string().uuid().optional(),
+    notes: z.string().optional(),
+    budget: z.number().optional(),
+    expectedCloseDate: z.string().datetime().optional(),
+    createdById: z.string().uuid(), // Changed to UUID
+    updatedById: z.string().uuid().optional(),
+    createdAt: z.date().default(() => new Date()),
+    updatedAt: z.date().optional(),
 });
 
 // Client Schema

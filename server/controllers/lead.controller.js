@@ -1,5 +1,6 @@
 const { getLeads, getLead, createLead, updateLead, deleteLead } = require('../models/lead.model');
 const { insertLeadSchema } = require('../schema/schema');
+const { isValidPhone, isValidBudget, isValidDate } = require('../utils/Validations');
 
 async function listLeads(req, res) {
   try {
@@ -24,7 +25,20 @@ async function listLeads(req, res) {
 
 async function listLead(req, res) {
   try {
-    const id = parseInt(req.params.id);
+    const id = req.params.id;
+    
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      return res.status(400).json({
+        status: 400,
+        success: false,
+        message: 'Invalid input',
+        data: null,
+        error: { code: 'INVALID_ID', details: 'Lead ID must be a valid UUID' },
+      });
+    }
+
     const lead = await getLead(id);
     if (!lead) {
       return res.status(404).json({
@@ -35,6 +49,7 @@ async function listLead(req, res) {
         error: { code: 'NOT_FOUND', details: 'Lead not found' },
       });
     }
+
     res.status(200).json({
       status: 200,
       success: true,
@@ -55,29 +70,120 @@ async function listLead(req, res) {
 
 async function createlead(req, res) {
   try {
-    const validatedData = insertLeadSchema.parse(req.body);
-    const lead = await createLead(validatedData);
+    // Add creator information from authenticated user
+    const validatedData = insertLeadSchema.parse({
+      ...req.body,
+      createdById: req.user.id,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    // Validate phone if provided
+    if (validatedData.phone && !isValidPhone(validatedData.phone)) {
+      return res.status(400).json({
+        status: 400,
+        success: false,
+        message: 'Validation Error',
+        data: null,
+        error: { code: 'INVALID_PHONE', details: 'Invalid phone number format' },
+      });
+    }
+
+    // Validate budget if provided
+    if (validatedData.budget && !isValidBudget(validatedData.budget)) {
+      return res.status(400).json({
+        status: 400,
+        success: false,
+        message: 'Validation Error',
+        data: null,
+        error: { code: 'INVALID_BUDGET', details: 'Budget cannot be negative' },
+      });
+    }
+
+    // Validate expected close date if provided
+    if (validatedData.expectedCloseDate && !isValidDate(validatedData.expectedCloseDate)) {
+      return res.status(400).json({
+        status: 400,
+        success: false,
+        message: 'Validation Error',
+        data: null,
+        error: { code: 'INVALID_DATE', details: 'Expected close date cannot be in the past' },
+      });
+    }
+
+    const lead = await createLead({
+      ...validatedData,
+      created_by_id: req.user.id,
+      created_at: new Date(),
+    });
+
     res.status(201).json({
       status: 201,
       success: true,
-      message: 'Resource created successfully',
+      message: 'Lead created successfully',
       data: lead,
     });
+
   } catch (error) {
     console.error('Error creating lead:', error);
-    res.status(422).json({
-      status: 422,
+    
+    if (error.name === 'ZodError') {
+      return res.status(400).json({
+        status: 400,
+        success: false,
+        message: 'Validation Error',
+        data: null,
+        error: { code: 'VALIDATION_ERROR', details: error.errors },
+      });
+    }
+
+    if (error.name === 'DuplicateError') {
+      return res.status(409).json({
+        status: 409,
+        success: false,
+        message: 'Conflict Error',
+        data: null,
+        error: { code: error.code, details: error.message },
+      });
+    }
+
+    // Handle database unique constraint violation
+    if (error.code === '23505') { // PostgreSQL unique violation code
+      return res.status(409).json({
+        status: 409,
+        success: false,
+        message: 'Conflict Error',
+        data: null,
+        error: { code: 'DUPLICATE_EMAIL', details: 'A lead with this email already exists' },
+      });
+    }
+
+    res.status(500).json({
+      status: 500,
       success: false,
-      message: 'Invalid input',
+      message: 'Internal Server Error',
       data: null,
-      error: { code: 'INVALID_DATA', details: error.message },
+      error: { code: 'SERVER_ERROR', details: 'Error creating lead' },
     });
   }
 }
 
 async function updatelead(req, res) {
   try {
-    const id = parseInt(req.params.id);
+    const id = req.params.id;
+    
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      return res.status(400).json({
+        status: 400,
+        success: false,
+        message: 'Invalid input',
+        data: null,
+        error: { code: 'INVALID_ID', details: 'Lead ID must be a valid UUID' },
+      });
+    }
+
     const existingLead = await getLead(id);
     if (!existingLead) {
       return res.status(404).json({
@@ -88,29 +194,53 @@ async function updatelead(req, res) {
         error: { code: 'NOT_FOUND', details: 'Lead not found' },
       });
     }
+
     const validatedData = insertLeadSchema.partial().parse(req.body);
+
     const updatedLead = await updateLead(id, validatedData);
     res.status(200).json({
       status: 200,
       success: true,
-      message: 'Request successful',
+      message: 'Lead updated successfully',
       data: updatedLead,
     });
   } catch (error) {
     console.error('Error updating lead:', error);
-    res.status(422).json({
-      status: 422,
+    if (error.name === 'ZodError') {
+      return res.status(400).json({
+        status: 400,
+        success: false,
+        message: 'Validation Error',
+        data: null,
+        error: { code: 'VALIDATION_ERROR', details: error.errors },
+      });
+    }
+    res.status(500).json({
+      status: 500,
       success: false,
-      message: 'Invalid input',
+      message: 'Internal Server Error',
       data: null,
-      error: { code: 'INVALID_DATA', details: error.message },
+      error: { code: 'SERVER_ERROR', details: 'Error updating lead' },
     });
   }
 }
 
 async function deletelead(req, res) {
   try {
-    const id = parseInt(req.params.id);
+    const id = req.params.id;
+    
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      return res.status(400).json({
+        status: 400,
+        success: false,
+        message: 'Invalid input',
+        data: null,
+        error: { code: 'INVALID_ID', details: 'Lead ID must be a valid UUID' },
+      });
+    }
+
     const success = await deleteLead(id);
     if (!success) {
       return res.status(404).json({
@@ -121,6 +251,7 @@ async function deletelead(req, res) {
         error: { code: 'NOT_FOUND', details: 'Lead not found' },
       });
     }
+    
     res.status(200).json({
       status: 200,
       success: true,
