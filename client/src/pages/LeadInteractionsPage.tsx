@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -10,11 +9,11 @@ import { format } from "date-fns";
 import { ArrowLeft, Plus, Calendar, Clock, PhoneCall, Video, Mail, MessageSquare, UserPlus, CircleArrowUp, CircleArrowDown, Milestone, History } from "lucide-react";
 import { LeadInteraction } from "@/components/leads/LeadInteraction";
 import { useLeadInteractions } from "@/hooks/useLeadInteractions";
-import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { Lead } from "@/types/leads";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LeadScoreIndicator } from "@/components/leads/LeadScoreIndicator";
+import { API_URL } from "@/lib/constant";
 
 const getInteractionIcon = (type: string) => {
   switch (type) {
@@ -85,21 +84,41 @@ const formatDate = (date: string) => {
 export default function LeadInteractionsPage() {
   const { id = '' } = useParams<{ id: string }>();
   const [isInteractionDialogOpen, setIsInteractionDialogOpen] = useState(false);
-  const { interactions, isLoading, journeyEvents } = useLeadInteractions(id);
-  
-  const { data: lead } = useQuery({
-    queryKey: ['lead', id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('leads')
-        .select('*')
-        .eq('id', id)
-        .single();
+  const { interactions, isLoading: isInteractionsLoading, journeyEvents } = useLeadInteractions(id);
 
-      if (error) throw error;
-      return data as Lead;
+  const leadQuery = useQuery<Lead[]>({
+    queryKey: ['leads'],
+    queryFn: async () => {
+      const response = await fetch(`${API_URL}/api/leads`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch leads');
+      }
+
+      const data = await response.json();
+      return data.data;
     },
   });
+
+  const lead = leadQuery.data?.find((l: Lead) => l.id === id);
+
+  if (leadQuery.isLoading) {
+    return <div>Loading lead data...</div>;
+  }
+
+  if (leadQuery.isError) {
+    return <div>Error fetching lead data</div>;
+  }
+
+  if (!lead) {
+    return <div>Lead not found</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -118,16 +137,16 @@ export default function LeadInteractionsPage() {
             <CardHeader>
               <div className="flex items-center gap-3">
                 <Avatar className="h-12 w-12">
-                  {lead?.email ? (
-                    <AvatarImage src={`https://avatar.vercel.sh/${lead?.email}`} alt={lead?.name} />
+                  {lead.email ? (
+                    <AvatarImage src={`https://avatar.vercel.sh/${lead.email}`} alt={lead.name} />
                   ) : null}
                   <AvatarFallback>
-                    {lead?.name?.split(' ').map(n => n[0]).join('')}
+                    {lead.name?.split(' ').map(n => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <CardTitle>{lead?.name}</CardTitle>
-                  <CardDescription>{lead?.title} at {lead?.company}</CardDescription>
+                  <CardTitle>{lead.name}</CardTitle>
+                  <CardDescription>{lead.title || 'N/A'} at {lead.company}</CardDescription>
                 </div>
               </div>
             </CardHeader>
@@ -135,32 +154,32 @@ export default function LeadInteractionsPage() {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <div className="text-sm font-medium">Status</div>
-                  <Badge>{lead?.status}</Badge>
+                  <Badge>{lead.status}</Badge>
                 </div>
                 
                 <div className="flex justify-between items-center">
                   <div className="text-sm font-medium">Score</div>
-                  <LeadScoreIndicator score={lead?.score} />
+                  <LeadScoreIndicator score={lead.score || 0} />
                 </div>
                 
                 <div className="flex justify-between items-center">
                   <div className="text-sm font-medium">Source</div>
-                  <div className="text-sm">{lead?.source}</div>
+                  <div className="text-sm">{lead.source}</div>
                 </div>
                 
                 <div className="flex justify-between items-center">
                   <div className="text-sm font-medium">Assigned To</div>
-                  <div className="text-sm">{lead?.assigned_to}</div>
+                  <div className="text-sm">{lead.assigned_to || 'Unassigned'}</div>
                 </div>
 
                 <div className="flex justify-between items-center">
                   <div className="text-sm font-medium">Estimated Value</div>
-                  <div className="text-sm">{lead?.currency} {lead?.estimated_cost}</div>
+                  <div className="text-sm">{lead.currency || '$'} {lead.budget || 'N/A'}</div>
                 </div>
                 
                 <div className="flex justify-between items-center">
                   <div className="text-sm font-medium">Added on</div>
-                  <div className="text-sm">{lead?.created_at ? format(new Date(lead.created_at), 'MMM dd, yyyy') : '-'}</div>
+                  <div className="text-sm">{lead.created_at ? format(new Date(lead.created_at), 'MMM dd, yyyy') : '-'}</div>
                 </div>
               </div>
               
@@ -206,7 +225,7 @@ export default function LeadInteractionsPage() {
               <CardContent>
                 <TabsContent value="interactions">
                   <div className="space-y-6">
-                    {isLoading ? (
+                    {isInteractionsLoading ? (
                       <div className="flex items-center justify-center py-8">
                         <div className="text-center text-gray-500">Loading interactions...</div>
                       </div>
@@ -228,7 +247,6 @@ export default function LeadInteractionsPage() {
                         
                         {interactions?.map((interaction) => (
                           <div key={interaction.id} className="relative mb-8 pl-12">
-                            {/* Timeline dot */}
                             <div className={`absolute left-0 top-0 rounded-full p-2 ${getInteractionColor(interaction.type)}`}>
                               {getInteractionIcon(interaction.type)}
                             </div>
@@ -276,7 +294,6 @@ export default function LeadInteractionsPage() {
                       
                       {journeyEvents?.map((event) => (
                         <div key={event.id} className="relative mb-8 pl-12">
-                          {/* Timeline dot */}
                           <div className={`absolute left-0 top-0 rounded-full p-2 ${getJourneyEventColor(event.event_type)}`}>
                             {getJourneyEventIcon(event.event_type)}
                           </div>

@@ -1,6 +1,4 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { LeadInteraction, LeadJourneyEvent } from "@/types/leads";
 import { toast } from "sonner";
 
@@ -10,27 +8,58 @@ export function useLeadInteractions(leadId: string) {
   const { data: interactions, isLoading } = useQuery({
     queryKey: ['leadInteractions', leadId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('lead_interactions')
-        .select('*')
-        .eq('lead_id', leadId)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data as LeadInteraction[];
+      // Mock data for lead interactions
+      return [
+        {
+          id: 'int1',
+          lead_id: leadId,
+          type: 'Call',
+          title: 'Initial Discovery Call',
+          description: 'Discussed client needs and project scope.',
+          date: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(), // 12 days ago
+          next_meeting_date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days from now
+          created_by: 'John Doe (Sales Person)',
+          created_at: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
+          updated_at: null,
+        },
+        {
+          id: 'int2',
+          lead_id: leadId,
+          type: 'Email',
+          title: 'Follow-up Email',
+          description: 'Sent project proposal and pricing details.',
+          date: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(), // 8 days ago
+          next_meeting_date: null,
+          created_by: 'Jane Smith (Sales Team Lead)',
+          created_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+          updated_at: null,
+        },
+        {
+          id: 'int3',
+          lead_id: leadId,
+          type: 'Meeting',
+          title: 'In-Person Meeting',
+          description: 'Met with client to review proposal and discuss next steps.',
+          date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(), // 4 days ago
+          next_meeting_date: null,
+          created_by: 'Michael Johnson (Sales Manager)',
+          created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+          updated_at: null,
+        },
+      ] as LeadInteraction[];
     },
   });
 
   const addInteraction = useMutation({
     mutationFn: async (newInteraction: Omit<LeadInteraction, 'id' | 'created_at' | 'updated_at'>) => {
-      const { data, error } = await supabase
-        .from('lead_interactions')
-        .insert([newInteraction])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
+      // Simulate adding an interaction to the static data
+      const newInteractionData: LeadInteraction = {
+        id: `int${Date.now()}`, // Generate a unique ID
+        created_at: new Date().toISOString(),
+        updated_at: null,
+        ...newInteraction,
+      };
+      return newInteractionData;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leadInteractions', leadId] });
@@ -42,12 +71,10 @@ export function useLeadInteractions(leadId: string) {
     },
   });
 
-  // Get journey analytics for this lead
   const { data: journeyEvents } = useQuery({
     queryKey: ['leadJourney', leadId],
     queryFn: async () => {
-      // In a real app, we would fetch this from a lead_journey_events table
-      // For now, we'll generate some mock data based on the lead ID
+      // Static mock data for journey events
       return [
         {
           id: '1',

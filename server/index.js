@@ -4,9 +4,16 @@ const { registerRoutes } = require('./routes/register.routes');
 const { log } = require('./utils/log');
 const { Pool } = require('pg');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
+
+// Configure CORS
+app.use(cors({
+  origin: 'http://localhost:8080', // Allow requests from the frontend origin
+  credentials: true, // Allow cookies to be sent with requests
+}));
 app.use(cookieParser());
 
 // Test database connection on startup

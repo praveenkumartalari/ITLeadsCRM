@@ -11,6 +11,7 @@ export interface Lead {
   score: number;
   estimated_cost?: number;
   currency: string;
+  budget?: number;
   assigned_to?: string;
   created_at: string;
   updated_at: string;

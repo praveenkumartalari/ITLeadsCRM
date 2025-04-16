@@ -100,8 +100,8 @@ async function register(req, res) {
 async function login(req, res) {
   try {
     const { username, password } = req.body;
-
-    const user = await getUserByEmail(username);
+    console.log("Login attempt with username:", username);
+    const user = await getUserByUsername(username);
 
     if (!user) {
       return res.status(401).json({
