@@ -4,6 +4,7 @@ const {
   login,
   authenticate,
   getCurrentUser,
+  logout,
 } = require('../controllers/auth.controller');
 
 const router = express.Router();
@@ -106,5 +107,65 @@ router.post('/login', login);
  *         description: Server error
  */
 router.get('/me', authenticate, getCurrentUser);
+
+
+
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     summary: Logout current user
+ *     tags: [Auth]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Logout successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Logged out successfully"
+ *                 data:
+ *                   type: null
+ *                   example: null
+ *       401:
+ *         description: Not authenticated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 401
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 message:
+ *                   type: string
+ *                   example: "Unauthorized access"
+ *                 data:
+ *                   type: null
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                       example: "AUTH_ERROR"
+ *                     details:
+ *                       type: string
+ *                       example: "Authentication required"
+ */
+router.post('/logout', authenticate, logout);
 
 module.exports = router;

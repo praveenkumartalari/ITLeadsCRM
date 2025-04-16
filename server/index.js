@@ -3,9 +3,11 @@ const { createServer } = require('http');
 const { registerRoutes } = require('./routes/register.routes');
 const { log } = require('./utils/log');
 const { Pool } = require('pg');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 const app = express();
+app.use(cookieParser());
 
 // Test database connection on startup
 const pool = new Pool({

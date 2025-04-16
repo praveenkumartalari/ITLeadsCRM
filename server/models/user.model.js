@@ -1,5 +1,6 @@
 const { query } = require('../config/db'); // Adjusted to point to models/db.js
 const bcrypt = require('bcryptjs');
+const { v4: uuidv4 } = require('uuid'); 
 
 async function getUser(id) {
   const result = await query('SELECT * FROM users WHERE id = $1', [id]);
@@ -18,12 +19,14 @@ async function getUserByEmail(email) {
 
 async function createUser(user) {
   const hashedPassword = await bcrypt.hash(user.password, 10);
+  const userId = uuidv4();
   const result = await query(
-    'INSERT INTO users (username, email, password, role) VALUES ($1, $2, $3, $4) RETURNING *',
-    [user.username, user.email, hashedPassword, user.role || 'sales_rep']
+    'INSERT INTO users (id, username, email, password, role) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+    [userId, user.username, user.email, hashedPassword, user.role || 'sales_rep']
   );
   return result.rows[0];
 }
+
 
 async function updateUser(id, userData) {
   if (userData.password) {
