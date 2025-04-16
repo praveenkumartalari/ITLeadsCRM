@@ -1,121 +1,165 @@
-import { useQuery } from "@tanstack/react-query";
-import StatsCard from "@/components/dashboard/stats-card";
-import SalesFunnel from "@/components/dashboard/sales-funnel";
-import MonthlyLeadsChart from "@/components/dashboard/monthly-leads-chart";
-import RecentLeadsTable from "@/components/dashboard/recent-leads-table";
-import TopPerformers from "@/components/dashboard/top-performers";
-import UpcomingActivities from "@/components/dashboard/upcoming-activities";
-import { 
-  UserSearch, 
-  Building2, 
-  PieChart, 
-  DollarSign 
-} from "lucide-react";
-import { useAuth } from "@/lib/auth";
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArrowUpRight, Users, CheckCircle, AlertCircle, Zap, PhoneCall, Mail, TrendingUp } from "lucide-react";
+import { LeadActivity } from "@/components/dashboard/LeadActivity";
+import { PipelineChart } from "@/components/dashboard/PipelineChart";
+import { RecentLeads } from "@/components/dashboard/RecentLeads";
 
 export default function Dashboard() {
-  const { user } = useAuth();
-  
-  // Fetch dashboard stats
-  const { data: dashboardStats, isLoading: isLoadingStats } = useQuery({
-    queryKey: ["/api/dashboard/stats"],
-    refetchInterval: 60000 // Refresh every minute
-  });
-  
-  // Fetch recent leads
-  const { data: recentLeads, isLoading: isLoadingLeads } = useQuery({
-    queryKey: ["/api/leads"],
-  });
-  
-  // Fetch upcoming activities
-  const { data: upcomingActivities, isLoading: isLoadingActivities } = useQuery({
-    queryKey: [`/api/activities/upcoming/${user?.id}`, user?.id],
-    enabled: !!user?.id
-  });
-  
   return (
-    <>
-      {/* Dashboard Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatsCard
-          title="Total Leads"
-          value={isLoadingStats ? "..." : dashboardStats?.totalLeads || 0}
-          icon={<UserSearch className="text-xl" />}
-          iconBgColor="bg-primary-100"
-          iconColor="text-primary"
-          trend={12}
-          trendLabel="this month"
-        />
-        
-        <StatsCard
-          title="Active Clients"
-          value={isLoadingStats ? "..." : dashboardStats?.activeClients || 0}
-          icon={<Building2 className="text-xl" />}
-          iconBgColor="bg-secondary-100"
-          iconColor="text-secondary-600"
-          trend={4}
-          trendLabel="this month"
-        />
-        
-        <StatsCard
-          title="Conversion Rate"
-          value={`${isLoadingStats ? "..." : dashboardStats?.conversionRate.toFixed(1) || 0}%`}
-          icon={<PieChart className="text-xl" />}
-          iconBgColor="bg-amber-100"
-          iconColor="text-amber-600"
-          trend={-2}
-          trendLabel="this month"
-        />
-        
-        <StatsCard
-          title="Deals Closed"
-          value={isLoadingStats ? "..." : `$${(dashboardStats?.dealsClosed / 1000 || 0).toFixed(0)}K`}
-          icon={<DollarSign className="text-xl" />}
-          iconBgColor="bg-emerald-100"
-          iconColor="text-emerald-600"
-          trend={18}
-          trendLabel="this month"
-        />
-      </div>
-
-      {/* Sales Funnel & Monthly Lead Trends */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <SalesFunnel
-          data={dashboardStats?.salesFunnel || []}
-          conversionRate={dashboardStats?.conversionRate || 0}
-          avgDealSize={24500}
-          isLoading={isLoadingStats}
-        />
-        
-        <div className="lg:col-span-2">
-          <MonthlyLeadsChart
-            data={dashboardStats?.monthlySummary || []}
-            isLoading={isLoadingStats}
-          />
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <div className="flex items-center gap-2">
+          <Button variant="outline">Export</Button>
+          <Button>Add Lead</Button>
         </div>
       </div>
-
-      {/* Recent Leads & Top Performers + Upcoming */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <RecentLeadsTable
-            leads={recentLeads || []}
-            isLoading={isLoadingLeads}
-          />
-        </div>
+      
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
+            <Users className="h-4 w-4 text-gray-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">2,853</div>
+            <p className="text-xs text-gray-500">+18% from last month</p>
+            <Progress value={65} className="h-1 mt-2" />
+          </CardContent>
+        </Card>
         
-        <div className="space-y-6 lg:col-span-1">
-          <TopPerformers
-            performers={dashboardStats?.topPerformers || []}
-            isLoading={isLoadingStats}
-          />
-          
-          <UpcomingActivities
-            activities={upcomingActivities || []}
-            isLoading={isLoadingActivities}
-          />
-        </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Qualified Leads</CardTitle>
+            <CheckCircle className="h-4 w-4 text-gray-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">1,264</div>
+            <p className="text-xs text-gray-500">+7% from last month</p>
+            <Progress value={45} className="h-1 mt-2" />
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
+            <TrendingUp className="h-4 w-4 text-gray-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">18.2%</div>
+            <p className="text-xs text-gray-500">+2.4% from last month</p>
+            <Progress value={18} className="h-1 mt-2" />
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Tasks Due</CardTitle>
+            <AlertCircle className="h-4 w-4 text-gray-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">42</div>
+            <p className="text-xs text-gray-500">12 urgent tasks</p>
+            <Progress value={75} className="h-1 mt-2" />
+          </CardContent>
+        </Card>
       </div>
-    </>
+      
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="col-span-4">
+          <CardHeader>
+            <CardTitle>Pipeline Overview</CardTitle>
+            <CardDescription>
+              Lead distribution across sales pipeline
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PipelineChart />
+          </CardContent>
+        </Card>
+        
+        <Card className="col-span-3">
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+            <CardDescription>
+              Latest lead interactions
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <LeadActivity />
+          </CardContent>
+        </Card>
+      </div>
+      
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="col-span-3">
+          <CardHeader>
+            <CardTitle>Recent Leads</CardTitle>
+            <CardDescription>
+              Leads added in the last 7 days
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <RecentLeads />
+          </CardContent>
+        </Card>
+        
+        <Card className="col-span-4">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Today's Tasks</CardTitle>
+              <Tabs defaultValue="calls">
+                <TabsList>
+                  <TabsTrigger value="calls">
+                    <PhoneCall className="h-4 w-4 mr-2" />
+                    Calls
+                  </TabsTrigger>
+                  <TabsTrigger value="emails">
+                    <Mail className="h-4 w-4 mr-2" />
+                    Emails
+                  </TabsTrigger>
+                  <TabsTrigger value="follow-ups">
+                    <Zap className="h-4 w-4 mr-2" />
+                    Follow-ups
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="calls">
+              <TabsContent value="calls">
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center gap-4 rounded-lg border p-3">
+                      <div className="flex-1">
+                        <div className="font-medium">Call with Jane Smith</div>
+                        <div className="text-sm text-gray-500">Today, 2:00 PM</div>
+                      </div>
+                      <Button variant="outline" size="sm">Reschedule</Button>
+                      <Button size="sm">Call</Button>
+                    </div>
+                  ))}
+                </div>
+              </TabsContent>
+              <TabsContent value="emails">
+                <div className="p-8 text-center text-muted-foreground">
+                  No email tasks scheduled for today
+                </div>
+              </TabsContent>
+              <TabsContent value="follow-ups">
+                <div className="p-8 text-center text-muted-foreground">
+                  No follow-ups scheduled for today
+                </div>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }

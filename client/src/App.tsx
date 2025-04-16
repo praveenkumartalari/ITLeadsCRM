@@ -1,98 +1,39 @@
-import { Switch, Route } from "wouter";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "./lib/queryClient";
-import { AuthProvider } from "./lib/auth.tsx";
 
-import Layout from "./components/layout/layout";
-import Dashboard from "./pages/dashboard";
-import LeadsPage from "./pages/leads/index";
-import LeadForm from "./pages/leads/lead-form";
-import ClientsPage from "./pages/clients/index";
-import ClientForm from "./pages/clients/client-form";
-import ActivitiesPage from "./pages/activities/index";
-import ActivityForm from "./pages/activities/activity-form";
-import LoginPage from "./pages/login";
-import RegisterPage from "./pages/register";
-import NotFound from "./pages/not-found";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Toaster } from "./components/ui/sonner";
+import { MainLayout } from "./components/layout/MainLayout";
+import Dashboard from "./pages/Dashboard";
+import LeadsPage from "./pages/LeadsPage";
+import LeadProfilePage from "./pages/LeadProfilePage";
+import LeadInteractionsPage from "./pages/LeadInteractionsPage";
+import CalendarPage from "./pages/CalendarPage";
+import CampaignsPage from "./pages/CampaignsPage";
+import AnalyticsPage from "./pages/AnalyticsPage";
+import TasksPage from "./pages/TasksPage";
+import SettingsPage from "./pages/SettingsPage";
+import AdminPage from "./pages/AdminPage";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Switch>
-          <Route path="/login" component={LoginPage} />
-          <Route path="/register" component={RegisterPage} />
-          
-          <Route path="/">
-            <Layout>
-              <Dashboard />
-            </Layout>
-          </Route>
-          
-          <Route path="/leads">
-            <Layout>
-              <LeadsPage />
-            </Layout>
-          </Route>
-          
-          <Route path="/leads/new">
-            <Layout>
-              <LeadForm />
-            </Layout>
-          </Route>
-          
-          <Route path="/leads/:id">
-            {(params) => (
-              <Layout>
-                <LeadForm id={parseInt(params.id)} />
-              </Layout>
-            )}
-          </Route>
-          
-          <Route path="/clients">
-            <Layout>
-              <ClientsPage />
-            </Layout>
-          </Route>
-          
-          <Route path="/clients/new">
-            <Layout>
-              <ClientForm />
-            </Layout>
-          </Route>
-          
-          <Route path="/clients/:id">
-            {(params) => (
-              <Layout>
-                <ClientForm id={parseInt(params.id)} />
-              </Layout>
-            )}
-          </Route>
-          
-          <Route path="/activities">
-            <Layout>
-              <ActivitiesPage />
-            </Layout>
-          </Route>
-          
-          <Route path="/activities/new">
-            <Layout>
-              <ActivityForm />
-            </Layout>
-          </Route>
-          
-          <Route path="/activities/:id">
-            {(params) => (
-              <Layout>
-                <ActivityForm id={parseInt(params.id)} />
-              </Layout>
-            )}
-          </Route>
-          
-          <Route component={NotFound} />
-        </Switch>
-      </AuthProvider>
-    </QueryClientProvider>
+    <Router>
+      <MainLayout>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/leads" element={<LeadsPage />} />
+          <Route path="/leads/:id" element={<LeadProfilePage />} />
+          <Route path="/leads/:id/interactions" element={<LeadInteractionsPage />} />
+          <Route path="/calendar" element={<CalendarPage />} />
+          <Route path="/campaigns" element={<CampaignsPage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/tasks" element={<TasksPage />} />
+          <Route path="/admin" element={<AdminPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </MainLayout>
+      <Toaster />
+    </Router>
   );
 }
 

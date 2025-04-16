@@ -1,6 +1,45 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 24 95% 60%; /* Orange foreground */
+
+    --primary: 24 95% 60%; /* Bright Orange */
+    --primary-foreground: 0 0% 100%; /* White */
+
+    --secondary: 24 50% 96%; /* Soft Orange */
+    --secondary-foreground: 24 30% 10%;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 24 95% 60%;
+    --sidebar-primary: 24 95% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 24 50% 96%;
+    --sidebar-accent-foreground: 24 30% 10%;
+  }
+
+  .dark {
+    --background: 24 10% 10%; /* Dark background */
+    --foreground: 24 95% 60%; /* Orange foreground */
+
+    --primary: 24 95% 60%; /* Bright Orange */
+    --primary-foreground: 0 0% 100%; /* White */
+
+    --secondary: 24 30% 20%; /* Dark Soft Orange */
+    --secondary-foreground: 24 50% 96%;
+
+    --sidebar-background: 24 10% 15%;
+    --sidebar-foreground: 24 95% 60%;
+    --sidebar-primary: 24 95% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 24 30% 20%;
+    --sidebar-accent-foreground: 24 50% 96%;
+  }
+}
 
 @layer base {
   * {
@@ -8,6 +47,6 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply bg-background text-foreground;
   }
 }
