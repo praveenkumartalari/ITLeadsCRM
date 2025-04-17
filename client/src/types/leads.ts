@@ -9,6 +9,8 @@ export interface Lead {
   status: string;
   source?: string;
   score: number;
+  industry?: string;
+  lastContact?: string;
   estimated_cost?: number;
   currency: string;
   budget?: number;
@@ -41,3 +43,58 @@ export interface LeadJourneyEvent {
 }
 
 export type SalesRole = 'Sales Manager' | 'Sales Team Lead' | 'Sales Person';
+
+
+export interface AssignedTo {
+  id?: string;
+  name: string;
+  email: string;
+}
+
+export interface Note {
+  id: number;
+  content: string;
+  createdBy: string;
+  createdAt: string;
+}
+
+export interface Activity {
+  id: string;
+  type: string;
+  subject: string;
+  content: string;
+  date: string;
+  performed_by: string;
+}
+
+export interface Task {
+  id: string;
+  title: string;
+  dueDate: string;
+  assignedTo: string;
+  priority: string;
+}
+
+export interface LeadDetails {
+  id: string;
+  name: string;
+  title: string;
+  company: string;
+  email: string;
+  phone: string;
+  location: string;
+  status: string;
+  source: string;
+  score: number;
+  lastContact: string;
+  assignedTo: AssignedTo;
+  tags: string[];
+  notes: string; // Changed from Note[] to string to match form
+  activities: Activity[];
+  tasks: Task[];
+  budget?: number;
+  expectedCloseDate?: string;
+  company_size?: "Enterprise" | "Mid-Market" | "Small Business" | "Startup";
+}
+
+

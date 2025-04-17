@@ -13,12 +13,6 @@ export const MainLayout = ({ children }: { children: React.ReactNode }) => {
         <AppSidebar />
         <main className="flex-1 p-6 overflow-auto">
           {children}
-          <button
-            onClick={logout}
-            className="mt-6 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition duration-300"
-          >
-            Logout
-          </button>
         </main>
       </div>
     </div>

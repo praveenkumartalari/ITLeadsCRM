@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -17,6 +17,16 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import MainLogo from "@/assets/Logos/Calibrage_MainLogo.png";
 import Logo from "@/assets/Logos/Calibrage_Logo.png";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
+
 const navItems = [
   { title: "Dashboard", href: "/", icon: LayoutDashboard },
   { title: "Leads", href: "/leads", icon: Users },
@@ -29,7 +39,48 @@ const navItems = [
 
 export function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const [user, setUser] = useState<{ id: string; username: string; email: string; role: string } | null>(null);
+  const [loading, setLoading] = useState(true);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useContext(AuthContext);
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/auth/me", {
+          credentials: "include",
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setUser(data.data.user);
+        } else {
+          toast.error(data.message || "Failed to load user details");
+        }
+      } catch (error) {
+        toast.error("Failed to load user details");
+        console.error("Error fetching current user:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCurrentUser();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      // Navigation is now handled by ProtectedRoute, but add a fallback
+      if (!document.cookie.includes('auth_token')) {
+        navigate('/login');
+      }
+    } catch (error) {
+      toast.error("Logout failed");
+      console.error("Error during logout:", error);
+    }
+  };
+
+  if (loading) return null; // Hide sidebar until user data is loaded
 
   return (
     <div
@@ -106,23 +157,37 @@ export function AppSidebar() {
       <Separator className="my-2" />
 
       <div className="p-4">
-        {!collapsed ? (
-          <div className="flex items-center gap-3 animate-fadeIn">
-            <Avatar className="h-10 w-10 transition-all duration-300">
-              <AvatarImage src="https://github.com/shadcn.png" />
-              <AvatarFallback>JD</AvatarFallback>
-            </Avatar>
-            <div className="transition-opacity duration-300">
-              <p className="text-sm font-medium">John Doe</p>
-              <p className="text-xs text-gray-500">Sales Manager</p>
-            </div>
-          </div>
-        ) : (
-          <Avatar className="h-10 w-10 mx-auto transition-all duration-300">
-            <AvatarImage src="https://github.com/shadcn.png" />
-            <AvatarFallback>JD</AvatarFallback>
-          </Avatar>
-        )}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            {!collapsed ? (
+              <div className="flex items-center gap-3 animate-fadeIn cursor-pointer">
+                <Avatar className="h-10 w-10 transition-all duration-300">
+                  <AvatarImage src={`https://avatar.vercel.sh/${user?.email}`} />
+                  <AvatarFallback>{user?.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div className="transition-opacity duration-300">
+                  <p className="text-sm font-medium">{user?.username}</p>
+                  <p className="text-xs text-gray-500">{user?.role}</p>
+                </div>
+              </div>
+            ) : (
+              <Avatar className="h-10 w-10 mx-auto transition-all duration-300 cursor-pointer">
+                <AvatarImage src={`https://avatar.vercel.sh/${user?.email}`} />
+                <AvatarFallback>{user?.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+              </Avatar>
+            )}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuItem className="cursor-pointer">
+              <Link to="/profile" className="flex items-center w-full">
+                <span>Profile</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600">
+              <span>Logout</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );

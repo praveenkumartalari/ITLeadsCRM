@@ -1,7 +1,7 @@
 import { API_URL } from '@/lib/constant';
 import { AuthContextType, User } from '@/types/auth';
 import { createContext, useState, useEffect, ReactNode } from 'react';
-
+import { toast } from 'sonner';
 
 export const AuthContext = createContext<AuthContextType>({
   user: null,
@@ -22,15 +22,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           method: 'GET',
           credentials: 'include',
         });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch user');
-        }
-
         const data = await response.json();
-        setUser(data);
+        if (response.ok) {
+          setUser(data.data.user);
+        } else {
+          toast.error(data.message || 'Failed to fetch user');
+        }
       } catch (error) {
         setUser(null);
+        toast.error('Failed to fetch user');
       } finally {
         setIsLoading(false);
       }
@@ -48,22 +48,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         credentials: 'include',
         body: JSON.stringify({ username, password }),
       });
-
+      const loginData = await loginResponse.json();
       if (!loginResponse.ok) {
-        throw new Error('Login failed');
+        toast.error(loginData.message || 'Login failed');
+        throw new Error(loginData.message || 'Login failed');
       }
 
       const userResponse = await fetch(`${API_URL}/api/auth/me`, {
         method: 'GET',
         credentials: 'include',
       });
-
+      const userData = await userResponse.json();
       if (!userResponse.ok) {
-        throw new Error('Failed to fetch user after login');
+        toast.error(userData.message || 'Failed to fetch user after login');
+        throw new Error(userData.message || 'Failed to fetch user after login');
       }
-
-      const data = await userResponse.json();
-      setUser(data);
+      setUser(userData.data.user);
     } catch (error) {
       setUser(null);
       throw error;
@@ -76,13 +76,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         method: 'POST',
         credentials: 'include',
       });
-
-      if (!response.ok) {
-        throw new Error('Logout failed');
+      const data = await response.json();
+      if (response.ok) {
+        toast.success(data.message);
+        setUser(null);
+      } else {
+        toast.error(data.message || 'Logout failed');
       }
-
-      setUser(null);
     } catch (error) {
+      toast.error('Logout failed');
       console.error('Logout failed', error);
     }
   };
