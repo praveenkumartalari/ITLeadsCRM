@@ -70,9 +70,10 @@ async function listLead(req, res) {
 
 async function createlead(req, res) {
   try {
-    // Add creator information from authenticated user
+    // Add creator information and handle score from authenticated user
     const validatedData = insertLeadSchema.parse({
       ...req.body,
+      score: req.body.score || 0,
       createdById: req.user.id,
       createdAt: new Date(),
       updatedAt: new Date()
@@ -113,9 +114,12 @@ async function createlead(req, res) {
 
     const lead = await createLead({
       ...validatedData,
+      score: validatedData.score,
       created_by_id: req.user.id,
       created_at: new Date(),
     });
+
+    console.log(`Lead created: ${lead.id} by user: ${req.user.id}, score: ${lead.score}`);
 
     res.status(201).json({
       status: 201,

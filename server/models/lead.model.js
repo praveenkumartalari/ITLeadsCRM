@@ -39,8 +39,9 @@ async function createLead(lead) {
       expected_close_date,
       created_by_id,
       created_at,
-      updated_at
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *`,
+      updated_at,
+      score
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *`,
     [
       lead.name,
       lead.email,
@@ -55,7 +56,8 @@ async function createLead(lead) {
       lead.expectedCloseDate,
       lead.created_by_id,
       lead.created_at,
-      lead.updated_at
+      lead.updated_at,
+      lead.score || 0
     ]
   );
   return result.rows[0];

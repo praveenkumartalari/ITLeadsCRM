@@ -40,6 +40,7 @@ const swaggerOptions = {
     './routes/file.routes.js',
     './routes/user.routes.js',
     './routes/option.routes.js',
+    './routes/interaction.routes.js' 
   ], // Point to all route files for Swagger annotations
 };
 

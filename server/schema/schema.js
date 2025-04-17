@@ -17,6 +17,7 @@ const insertLeadSchema = z.object({
     updatedById: z.string().uuid().optional(),
     createdAt: z.date().default(() => new Date()),
     updatedAt: z.date().optional(),
+    score: z.number().int().min(0).max(100).default(0),
 });
 
 // Client Schema
@@ -64,6 +65,26 @@ const insertFileSchema = z.object({
   uploadedById: z.number().int(),
 });
 
+const interactionTypes = Object.freeze([
+  'CALL',
+  'MEETING',
+  'EMAIL',
+  'NOTE',
+  'OTHER'
+]);
+
+const insertInteractionSchema = z.object({
+  leadId: z.string().uuid(),
+  type: z.enum(interactionTypes),
+  title: z.string().min(2, "Title must be at least 2 characters"),
+  description: z.string().optional(),
+  interactionDate: z.string().datetime(),
+  nextFollowUp: z.string().datetime().optional(),
+  durationMinutes: z.number().int().min(0).optional(),
+  outcome: z.string().optional(),
+  metadata: z.record(z.string(), z.any()).optional()
+});
+
 // Options (from your original schema)
 const leadStatusOptions = [
   'New',
@@ -91,4 +112,6 @@ module.exports = {
   insertFileSchema,
   leadStatusOptions,
   leadSourceOptions,
+  insertInteractionSchema,
+  interactionTypes
 };
