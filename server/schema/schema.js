@@ -2,22 +2,24 @@ const { z } = require('zod');
 
 // Lead Schema
 const insertLeadSchema = z.object({
-    name: z.string().min(2, "Name must be at least 2 characters"),
-    email: z.string().email("Invalid email format"),
-    phone: z.string().optional(),
-    company: z.string().optional(),
-    industry: z.string().optional(),
-    source: z.string().optional(),
-    status: z.string().default('new'),
-    assignedToId: z.string().uuid().optional(),
-    notes: z.string().optional(),
-    budget: z.number().optional(),
-    expectedCloseDate: z.string().datetime().optional(),
-    createdById: z.string().uuid(), // Changed to UUID
-    updatedById: z.string().uuid().optional(),
-    createdAt: z.date().default(() => new Date()),
-    updatedAt: z.date().optional(),
-    score: z.number().int().min(0).max(100).default(0),
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Invalid email format"),
+  phone: z.string().optional(),
+  company: z.string().optional(),
+  companySize: z.enum(['Enterprise', 'Mid-Market', 'Small Business', 'Startup']).optional(),
+  industry: z.string().optional(),
+  location: z.string().min(2, "Location must be at least 2 characters").optional(),
+  source: z.string().optional(),
+  status: z.string().default('new'),
+  assignedToId: z.string().uuid().optional(),
+  notes: z.string().optional(),
+  budget: z.number().optional(),
+  expectedCloseDate: z.string().datetime().optional(),
+  createdById: z.string().uuid(),
+  updatedById: z.string().uuid().optional(),
+  createdAt: z.date().default(() => new Date()),
+  updatedAt: z.date().optional(),
+  score: z.number().int().min(0).max(100).default(0)
 });
 
 // Client Schema
@@ -96,6 +98,23 @@ const taskSchema = z.object({
     sourceInteractionId: z.string().uuid().optional()
 });
 
+const taskStatuses = [
+    'PENDING',
+    'IN_PROGRESS',
+    'COMPLETED',
+    'CANCELLED',
+    'REOPENED'
+];
+
+const updateTaskSchema = z.object({
+    title: z.string().min(3).optional(),
+    description: z.string().optional(),
+    dueDate: z.string().datetime().optional(),
+    priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
+    status: z.enum(taskStatuses).optional(),
+    assignedToId: z.string().uuid().optional()
+});
+
 // Options (from your original schema)
 const leadStatusOptions = [
   'New',
@@ -125,5 +144,7 @@ module.exports = {
   leadSourceOptions,
   insertInteractionSchema,
   interactionTypes,
-  taskSchema
+  taskSchema,
+  updateTaskSchema,
+  taskStatuses
 };

@@ -30,6 +30,7 @@ async function createLead(lead) {
       email, 
       phone, 
       company, 
+      company_size,
       industry,
       source, 
       status, 
@@ -40,13 +41,15 @@ async function createLead(lead) {
       created_by_id,
       created_at,
       updated_at,
-      score
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *`,
+      score,
+      location
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *`,
     [
       lead.name,
       lead.email,
       lead.phone,
       lead.company,
+      lead.companySize,
       lead.industry,
       lead.source,
       lead.status || 'new',
@@ -57,7 +60,8 @@ async function createLead(lead) {
       lead.created_by_id,
       lead.created_at,
       lead.updated_at,
-      lead.score || 0
+      lead.score || 0,
+      lead.location
     ]
   );
   return result.rows[0];

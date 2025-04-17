@@ -75,4 +75,81 @@ async function getTasksByLead(leadId) {
     return result.rows;
 }
 
-module.exports = { createTask, getAllTasks, getTasksByLead };
+// Add updateTask function
+async function updateTask(taskId, taskData) {
+    // Get current task to check if status is changing
+    const currentTask = await getTaskById(taskId);
+    
+    // Convert camelCase to snake_case for database columns
+    const mappedData = {
+        title: taskData.title,
+        description: taskData.description,
+        due_date: taskData.dueDate,
+        priority: taskData.priority,
+        status: taskData.status,
+        assigned_to_id: taskData.assignedToId,
+        updated_by_id: taskData.updatedById,
+        updated_at: new Date()
+    };
+
+    // If status is changing, add status change tracking
+    if (taskData.status && currentTask.status !== taskData.status) {
+        mappedData.status_changed_at = new Date();
+        mappedData.status_changed_by_id = taskData.updatedById;
+
+        // Handle specific status timestamps
+        if (taskData.status === 'COMPLETED') {
+            mappedData.completed_at = new Date();
+            mappedData.cancelled_at = null;
+            mappedData.reopened_at = null;
+        } else if (taskData.status === 'CANCELLED') {
+            mappedData.cancelled_at = new Date();
+            mappedData.completed_at = null;
+            mappedData.reopened_at = null;
+        } else if (taskData.status === 'REOPENED') {
+            mappedData.reopened_at = new Date();
+            mappedData.completed_at = null;
+            mappedData.cancelled_at = null;
+        }
+    }
+
+    // Remove undefined values
+    Object.keys(mappedData).forEach(key => 
+        mappedData[key] === undefined && delete mappedData[key]
+    );
+
+    const fields = Object.keys(mappedData).map((key, i) => `${key} = $${i + 2}`).join(', ');
+    const values = Object.values(mappedData);
+
+    const result = await query(
+        `UPDATE tasks 
+         SET ${fields}
+         WHERE id = $1 
+         RETURNING *`,
+        [taskId, ...values]
+    );
+    
+    return result.rows[0];
+}
+
+async function getTaskById(taskId) {
+    const result = await query(
+        `SELECT t.*,
+            u1.username as assigned_to_name,
+            u2.username as created_by_name
+         FROM tasks t
+         LEFT JOIN users u1 ON u1.id = t.assigned_to_id
+         LEFT JOIN users u2 ON u2.id = t.created_by_id
+         WHERE t.id = $1`,
+        [taskId]
+    );
+    return result.rows[0];
+}
+
+module.exports = {
+    createTask,
+    getAllTasks,
+    getTasksByLead,
+    updateTask,
+    getTaskById  // Add this to exports
+};
