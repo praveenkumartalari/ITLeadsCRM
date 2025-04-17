@@ -1,12 +1,19 @@
 const express = require('express');
 const { authenticate } = require('../controllers/auth.controller');
-const { addInteraction, getInteractionHistory } = require('../controllers/interaction.controller');
+const { addInteraction, getInteractionHistory, getLeadMetrics } = require('../controllers/interaction.controller');
 
 const router = express.Router();
 
 /**
  * @swagger
- * /api/interactions/{leadId}:
+ * tags:
+ *   name: Interactions
+ *   description: Lead interaction management
+ */
+
+/**
+ * @swagger
+ * /api/leads/{leadId}:
  *   post:
  *     summary: Add a new interaction for a lead
  *     tags: [Interactions]
@@ -57,8 +64,8 @@ const router = express.Router();
  *               properties:
  *                 status: { type: integer, example: 201 }
  *                 success: { type: boolean, example: true }
- *                 message: { type: string, example: "Interaction recorded successfully" }
- *                 data: 
+ *                 message: { type: string }
+ *                 data:
  *                   type: object
  *                   properties:
  *                     id: { type: string, format: uuid }
@@ -67,6 +74,7 @@ const router = express.Router();
  *                     title: { type: string }
  *                     description: { type: string }
  *                     interactionDate: { type: string, format: date-time }
+ *                     newScore: { type: integer }
  *       400:
  *         description: Invalid input
  *       401:
@@ -78,7 +86,7 @@ router.post('/:leadId', authenticate, addInteraction);
 
 /**
  * @swagger
- * /api/interactions/{leadId}:
+ * /api/leads/{leadId}:
  *   get:
  *     summary: Get interaction history for a lead
  *     tags: [Interactions]
@@ -100,7 +108,7 @@ router.post('/:leadId', authenticate, addInteraction);
  *               properties:
  *                 status: { type: integer, example: 200 }
  *                 success: { type: boolean, example: true }
- *                 message: { type: string, example: "Request successful" }
+ *                 message: { type: string }
  *                 data:
  *                   type: array
  *                   items:
@@ -123,5 +131,59 @@ router.post('/:leadId', authenticate, addInteraction);
  *         description: Lead not found
  */
 router.get('/:leadId', authenticate, getInteractionHistory);
+
+/**
+ * @swagger
+ * /api/leads/{leadId}/analytics:
+ *   get:
+ *     summary: Get lead interaction analytics
+ *     tags: [Interactions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: leadId
+ *         required: true
+ *         schema: { type: string, format: uuid }
+ *         description: Lead ID
+ *     responses:
+ *       200:
+ *         description: Lead analytics data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status: { type: integer, example: 200 }
+ *                 success: { type: boolean, example: true }
+ *                 message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     interactionStats:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           type: { type: string }
+ *                           count: { type: integer }
+ *                           avgDuration: { type: number }
+ *                           lastInteraction: { type: string, format: date-time }
+ *                     responseTimes:
+ *                       type: object
+ *                       properties:
+ *                         avgResponseTimeHours: { type: number }
+ *                     taskMetrics:
+ *                       type: object
+ *                       properties:
+ *                         totalTasks: { type: integer }
+ *                         completedTasks: { type: integer }
+ *                         avgCompletionTimeHours: { type: number }
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Lead not found
+ */
+router.get('/:leadId/analytics', authenticate, getLeadMetrics);
 
 module.exports = router;
