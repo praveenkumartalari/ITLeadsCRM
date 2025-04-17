@@ -85,6 +85,17 @@ const insertInteractionSchema = z.object({
   metadata: z.record(z.string(), z.any()).optional()
 });
 
+const taskSchema = z.object({
+    title: z.string().min(3, "Title must be at least 3 characters"),
+    description: z.string().optional(),
+    dueDate: z.string().datetime(),
+    priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
+    type: z.enum(['CALL', 'MEETING', 'EMAIL', 'FOLLOW_UP', 'OTHER']),
+    leadId: z.string().uuid(),
+    assignedToId: z.string().uuid().optional(),
+    sourceInteractionId: z.string().uuid().optional()
+});
+
 // Options (from your original schema)
 const leadStatusOptions = [
   'New',
@@ -113,5 +124,6 @@ module.exports = {
   leadStatusOptions,
   leadSourceOptions,
   insertInteractionSchema,
-  interactionTypes
+  interactionTypes,
+  taskSchema
 };

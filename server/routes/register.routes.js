@@ -9,6 +9,8 @@ const fileRoutes = require('./file.routes');
 const userRoutes = require('./user.routes');
 const optionRoutes = require('./option.routes');
 const interactionRoutes = require('./interaction.routes'); // Add this line
+const taskRoutes = require('./task.routes');
+const scoringRoutes = require('./scoring.routes');
 const { setupSwagger } = require('../utils/swagger');
 
 async function registerRoutes(app) {
@@ -26,6 +28,8 @@ async function registerRoutes(app) {
   app.use('/api/users', userRoutes);
   app.use('/api/options', optionRoutes);
   app.use('/api/interactions', interactionRoutes);
+  app.use('/api/tasks', taskRoutes);
+  app.use('/api/leads', scoringRoutes);
 
   const httpServer = createServer(app);
   return httpServer;
