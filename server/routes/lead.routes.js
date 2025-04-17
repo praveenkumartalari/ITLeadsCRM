@@ -120,6 +120,7 @@ router.get('/:id', authenticate, listLead);
  *               assignedToId: { type: string, format: uuid }
  *               notes: { type: string }
  *               budget: { type: number, minimum: 0 }
+ *               score: { type: number, minimum: 0 }
  *               expectedCloseDate: { type: string, format: date-time }
  *     responses:
  *       201:
