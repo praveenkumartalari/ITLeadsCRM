@@ -10,11 +10,16 @@ export function AppHeader() {
     <header className="border-b bg-background py-3 px-6 sticky top-0 z-10">
       <div className="flex items-center justify-between">
         <div className="relative w-96">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          {/* <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
             placeholder="Search leads, tasks, etc..."
             className="pl-8"
+          /> */}
+          <img
+            src="https://calibrage.in/assets/images/calibrage-logo.png"
+            alt="Logo"
+            className="h-10 w-auto object-contain"
           />
         </div>
         <div className="flex items-center gap-2">

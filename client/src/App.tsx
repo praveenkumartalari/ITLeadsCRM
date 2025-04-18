@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom
 import { Toaster } from "./components/ui/sonner";
 import { ProtectedRoute, PublicRoute } from "./context/ProtectedRoute";
 import { MainLayout } from "./components/layout/MainLayout";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/dashboard";
 import LeadsPage from "./pages/LeadsPage";
 import LeadProfilePage from "./pages/LeadProfilePage";
 import LeadInteractionsPage from "./pages/LeadInteractionsPage";
