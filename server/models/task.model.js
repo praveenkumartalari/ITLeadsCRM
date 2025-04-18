@@ -21,7 +21,7 @@ async function createTask(task) {
       [
         task.title,
         task.description,
-        task.due_date || null, // Default to null if not provided, but ensure frontend sends it
+        task.due_date, // Default to null if not provided, but ensure frontend sends it
         task.priority,
         task.status || 'PENDING',
         task.type,

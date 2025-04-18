@@ -11,6 +11,7 @@ async function addInteraction(req, res) {
       leadId: req.params.leadId
     });
 
+    // Create interaction
     const interaction = await createInteraction({
       ...validatedData,
       created_by_id: req.user.id
@@ -18,24 +19,28 @@ async function addInteraction(req, res) {
 
     let associatedTask = null;
 
-    // Automatically create follow-up task if nextFollowUp is provided
+    // If there's a follow-up date, create a follow-up task
     if (validatedData.nextFollowUp) {
-      associatedTask = await createTask({
+      const taskPayload = {
         title: `Follow up: ${validatedData.title}`,
         description: `Follow up needed for ${validatedData.type.toLowerCase()} - ${validatedData.description || ''}`,
-        dueDate: validatedData.nextFollowUp,
+        due_date: validatedData.nextFollowUp,
         priority: 'HIGH',
+        status: 'PENDING',
         type: 'FOLLOW_UP',
-        leadId: validatedData.leadId,
-        assignedToId: req.user.id,
-        createdById: req.user.id,
-        sourceInteractionId: interaction.id
-      });
+        lead_id: validatedData.leadId,
+        assigned_to_id: req.user.id,
+        created_by_id: req.user.id,
+        source_interaction_id: interaction.id
+      };
+
+      associatedTask = await createTask(taskPayload);
     }
 
-    // Calculate new lead score
+    // Recalculate lead score after interaction
     const newScore = await calculateLeadScore(validatedData.leadId);
 
+    // Send successful response
     res.status(201).json({
       status: 201,
       success: true,
@@ -52,10 +57,10 @@ async function addInteraction(req, res) {
       status: 500,
       success: false,
       message: 'Internal Server Error',
-      error: { 
-        code: 'SERVER_ERROR', 
+      error: {
+        code: 'SERVER_ERROR',
         details: 'Error creating interaction',
-        message: error.message 
+        message: error.message
       }
     });
   }
