@@ -32,17 +32,17 @@ export const createLeadSchema = z.object({
   email: z.string().email("Invalid email format"),
   phone: z.string().optional(),
   company: z.string().optional(),
-  companySize: z
+  company_size: z
     .enum(["Enterprise", "Mid-Market", "Small Business", "Startup"])
     .optional(),
   industry: z.string().optional(),
   location: z.string().min(2, "Location must be at least 2 characters").optional(),
   source: z.string().optional(),
   status: z.string().default("New"),
-  assignedToId: z.string().uuid().optional(),
+  assigned_to_id: z.string().uuid().optional(),
   notes: z.string().optional(),
   budget: z.number().optional(),
-  expectedCloseDate: z.string().optional(),
+  expected_close_date: z.string().optional(),
   score: z.number().int().min(0).max(100).default(0),
 });
 
@@ -78,10 +78,10 @@ export function CreateLeadForm({ onClose, isOpen, setIsOpen }: CreateLeadFormPro
       notes: "",
       budget: undefined,
       score: 0,
-      assignedToId: "",
-      expectedCloseDate: "",
+      assigned_to_id: "",
+      expected_close_date: "",
       location: "",
-      companySize: undefined,
+      company_size: undefined,
     },
   });
 
@@ -112,7 +112,7 @@ export function CreateLeadForm({ onClose, isOpen, setIsOpen }: CreateLeadFormPro
           throw new Error(data.message || "Failed to fetch current user");
         }
         setCurrentUserId(data.data.user.id);
-        form.setValue("assignedToId", data.data.user.id);
+        form.setValue("assigned_to_id", data.data.user.id);
       } catch (error) {
         toast.error(error.message || "Failed to load current user");
         console.error("Error fetching current user:", error);
@@ -130,8 +130,8 @@ export function CreateLeadForm({ onClose, isOpen, setIsOpen }: CreateLeadFormPro
     try {
       const payload = {
         ...data,
-        expectedCloseDate: data.expectedCloseDate
-          ? new Date(data.expectedCloseDate).toISOString()
+        expected_close_date: data.expected_close_date
+          ? new Date(data.expected_close_date).toISOString()
           : undefined,
         budget: data.budget || undefined,
       };
@@ -336,7 +336,7 @@ export function CreateLeadForm({ onClose, isOpen, setIsOpen }: CreateLeadFormPro
 
                 <FormField
                   control={form.control}
-                  name="assignedToId"
+                  name="assigned_to_id"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Assigned To</FormLabel>
@@ -372,7 +372,7 @@ export function CreateLeadForm({ onClose, isOpen, setIsOpen }: CreateLeadFormPro
 
                 <FormField
                   control={form.control}
-                  name="expectedCloseDate"
+                  name="expected_close_date"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Expected Close Date</FormLabel>
@@ -404,7 +404,7 @@ export function CreateLeadForm({ onClose, isOpen, setIsOpen }: CreateLeadFormPro
 
                 <FormField
                   control={form.control}
-                  name="companySize"
+                  name="company_size"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Company Size</FormLabel>
@@ -580,12 +580,12 @@ export function UpdateLeadForm({
       notes: initialData.notes || "",
       budget: initialData.budget || undefined,
       score: initialData.score || 0,
-      assignedToId: initialData.assignedTo?.id || "",
-      expectedCloseDate: initialData.expectedCloseDate
+      assigned_to_id: initialData.assignedTo?.id || "",
+      expected_close_date: initialData.expectedCloseDate
         ? new Date(initialData.expectedCloseDate).toISOString().split("T")[0]
         : "",
       location: initialData.location || "",
-      companySize: initialData.company_size || undefined,
+      company_size: initialData.company_size || undefined, // Updated to company_size
     },
   });
 
@@ -616,8 +616,8 @@ export function UpdateLeadForm({
     try {
       const payload = {
         ...data,
-        expectedCloseDate: data.expectedCloseDate
-          ? new Date(data.expectedCloseDate).toISOString()
+        expected_close_date: data.expected_close_date
+          ? new Date(data.expected_close_date).toISOString()
           : undefined,
         budget: data.budget || undefined,
       };
@@ -805,7 +805,7 @@ export function UpdateLeadForm({
 
                 <FormField
                   control={form.control}
-                  name="assignedToId"
+                  name="assigned_to_id"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Assigned To</FormLabel>
@@ -833,7 +833,7 @@ export function UpdateLeadForm({
 
                 <FormField
                   control={form.control}
-                  name="expectedCloseDate"
+                  name="expected_close_date"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Expected Close Date</FormLabel>
@@ -865,7 +865,7 @@ export function UpdateLeadForm({
 
                 <FormField
                   control={form.control}
-                  name="companySize"
+                  name="company_size" // Updated to company_size
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Company Size</FormLabel>

@@ -1,20 +1,19 @@
 const { z } = require('zod');
 
-// Lead Schema
 const insertLeadSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email format"),
   phone: z.string().optional(),
   company: z.string().optional(),
-  companySize: z.enum(['Enterprise', 'Mid-Market', 'Small Business', 'Startup']).optional(),
+  company_size: z.enum(['Enterprise', 'Mid-Market', 'Small Business', 'Startup']).optional(),
   industry: z.string().optional(),
   location: z.string().min(2, "Location must be at least 2 characters").optional(),
   source: z.string().optional(),
   status: z.string().default('new'),
-  assignedToId: z.string().uuid().optional(),
+  assigned_to_id: z.string().uuid().optional(),
   notes: z.string().optional(),
   budget: z.number().optional(),
-  expectedCloseDate: z.string().datetime().optional(),
+  expected_close_date: z.string().datetime().optional(),
   createdById: z.string().uuid(),
   updatedById: z.string().uuid().optional(),
   createdAt: z.date().default(() => new Date()),
