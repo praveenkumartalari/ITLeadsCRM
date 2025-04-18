@@ -92,6 +92,14 @@ async function getLeadsByAssignee(userId) {
   return result.rows;
 }
 
+async function getLeadCountByUser(userId) {
+  const result = await query(
+    'SELECT COUNT(*) as lead_count FROM leads WHERE assigned_to_id = $1',
+    [userId]
+  );
+  return parseInt(result.rows[0].lead_count);
+}
+
 module.exports = {
   getLead,
   getLeadByEmail,
@@ -100,4 +108,5 @@ module.exports = {
   deleteLead,
   getLeads,
   getLeadsByAssignee,
+  getLeadCountByUser
 };
