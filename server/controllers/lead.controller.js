@@ -232,7 +232,6 @@ async function updatelead(req, res) {
     });
   }
 }
-
 async function deletelead(req, res) {
   try {
     const id = req.params.id;
