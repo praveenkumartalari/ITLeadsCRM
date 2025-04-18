@@ -13,7 +13,7 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/leads/{leadId}:
+ * /api/interactions/{leadId}:
  *   post:
  *     summary: Add a new interaction for a lead
  *     tags: [Interactions]
@@ -86,7 +86,7 @@ router.post('/:leadId', authenticate, addInteraction);
 
 /**
  * @swagger
- * /api/leads/{leadId}:
+ * /api/interactions/{leadId}:
  *   get:
  *     summary: Get interaction history for a lead
  *     tags: [Interactions]
@@ -134,7 +134,7 @@ router.get('/:leadId', authenticate, getInteractionHistory);
 
 /**
  * @swagger
- * /api/leads/{leadId}/analytics:
+ * /api/interactions/{leadId}/analytics:
  *   get:
  *     summary: Get lead interaction analytics
  *     tags: [Interactions]

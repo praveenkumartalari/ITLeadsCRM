@@ -65,9 +65,34 @@ async function getTasksByLead(leadId) {
 
 // Add updateTask function
 async function updateTask(taskId, taskData) {
-    // Get current task to check if status is changing
     const currentTask = await getTaskById(taskId);
     
+    // Record history if status or priority changes
+    if (taskData.status !== currentTask.status || taskData.priority !== currentTask.priority) {
+        await db.query(`
+            INSERT INTO task_history (
+                task_id,
+                changed_by_id,
+                assigned_to_id,
+                previous_status,
+                new_status,
+                previous_priority,
+                new_priority,
+                notes
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+            [
+                taskId,
+                taskData.updatedById,
+                taskData.assignedToId || currentTask.assigned_to_id,
+                currentTask.status,
+                taskData.status || currentTask.status,
+                currentTask.priority,
+                taskData.priority || currentTask.priority,
+                taskData.notes || `Status changed from ${currentTask.status} to ${taskData.status}`
+            ]
+        );
+    }
+
     // Convert camelCase to snake_case for database columns
     const mappedData = {
         title: taskData.title,
@@ -307,12 +332,15 @@ async function getTaskHistoryModel(taskId) {
     const result = await db.query(`
         SELECT 
             th.*,
-            u.username as changed_by_name
+            u1.username as changed_by_name,
+            u2.username as assigned_to_name
         FROM task_history th
-        JOIN users u ON u.id = th.changed_by_id
+        LEFT JOIN users u1 ON u1.id = th.changed_by_id
+        LEFT JOIN users u2 ON u2.id = th.assigned_to_id
         WHERE th.task_id = $1
-        ORDER BY th.changed_at DESC
-    `, [taskId]);
+        ORDER BY th.changed_at DESC`,
+        [taskId]
+    );
     
     return result.rows;
 }

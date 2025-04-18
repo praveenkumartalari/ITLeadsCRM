@@ -1,7 +1,13 @@
-const { getAllTasks, getTasksByLead, createTask: createTaskModel, 
-        updateTask: updateTaskModel, deleteTask: deleteTaskModel, 
-        getTaskById, getTaskAnalytics: getTaskAnalyticsModel,
-        searchTasks: searchTasksModel // Rename imported function
+const { 
+    getAllTasks, 
+    getTasksByLead, 
+    createTask: createTaskModel, 
+    updateTask: updateTaskModel, 
+    deleteTask: deleteTaskModel, 
+    getTaskById, 
+    getTaskAnalytics: getTaskAnalyticsModel,
+    searchTasks: searchTasksModel,
+    getTaskHistoryModel  // Add this import
 } = require('../models/task.model');
 const { createActivity } = require('../models/activity.model');
 const { taskSchema, updateTaskSchema } = require('../schema/schema');
