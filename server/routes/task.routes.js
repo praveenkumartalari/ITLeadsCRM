@@ -1,6 +1,16 @@
 const express = require('express');
 const { authenticate } = require('../controllers/auth.controller');
-const { listAllTasks, listLeadTasks, createTask, updateTask, deleteTask } = require('../controllers/task.controller');
+const { 
+    listAllTasks, 
+    listLeadTasks, 
+    createTask, 
+    updateTask, 
+    deleteTask, 
+    searchTasks, 
+    getTaskAnalytics,
+    getTaskDashboard,    // Make sure these are imported
+    getTaskHistory      // Make sure these are imported
+} = require('../controllers/task.controller');
 const router = express.Router();
 
 /**
@@ -35,6 +45,128 @@ const router = express.Router();
  *                     $ref: '#/components/schemas/Task'
  */
 router.get('/', authenticate, listAllTasks);
+
+/**
+ * @swagger
+ * /api/tasks/dashboard:
+ *   get:
+ *     summary: Get task dashboard statistics
+ *     tags: [Tasks]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Dashboard statistics retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     summary:
+ *                       type: object
+ *                       properties:
+ *                         total:
+ *                           type: integer
+ *                         completed:
+ *                           type: integer
+ *                         inProgress:
+ *                           type: integer
+ *                         pending:
+ *                           type: integer
+ *                         overdue:
+ *                           type: integer
+ *                     byUser:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           username:
+ *                             type: string
+ *                           taskCount:
+ *                             type: integer
+ *                           completionRate:
+ *                             type: number
+ *                           avgCompletionTime:
+ *                             type: number
+ */
+router.get('/dashboard', authenticate, getTaskDashboard);
+
+
+
+
+
+/**
+ * @swagger
+ * /api/tasks/search:
+ *   get:
+ *     summary: Search tasks with filters
+ *     tags: [Tasks]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [PENDING, IN_PROGRESS, COMPLETED, CANCELLED, REOPENED]
+ *       - in: query
+ *         name: priority
+ *         schema:
+ *           type: string
+ *           enum: [LOW, MEDIUM, HIGH, URGENT]
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [CALL, MEETING, EMAIL, FOLLOW_UP, OTHER]
+ *       - in: query
+ *         name: assignedToId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: query
+ *         name: dateFrom
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: dateTo
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: List of filtered tasks
+ */
+router.get('/search', authenticate, searchTasks);
 
 /**
  * @swagger
@@ -206,5 +338,24 @@ router.put('/:taskId', authenticate, updateTask);
  *         description: Task deleted successfully
  */
 router.delete('/:taskId', authenticate, deleteTask);
+
+
+/**
+ * @swagger
+ * /api/tasks/{taskId}/analytics:
+ *   get:
+ *     summary: Get analytics for a specific task
+ *     tags: [Tasks]
+ */
+router.get('/:taskId/analytics', authenticate, getTaskAnalytics);
+
+/**
+ * @swagger
+ * /api/tasks/{taskId}/history:
+ *   get:
+ *     summary: Get task status history
+ *     tags: [Tasks]
+ */
+router.get('/:taskId/history', authenticate, getTaskHistory);
 
 module.exports = router;
