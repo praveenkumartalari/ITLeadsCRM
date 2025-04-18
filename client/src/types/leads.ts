@@ -1,3 +1,4 @@
+import { Task } from "./task";
 
 export interface Lead {
   id: string;
@@ -67,13 +68,13 @@ export interface Activity {
   performed_by: string;
 }
 
-export interface Task {
-  id: string;
-  title: string;
-  dueDate: string;
-  assignedTo: string;
-  priority: string;
-}
+// export interface Task {
+//   id: string;
+//   title: string;
+//   dueDate: string;
+//   assignedTo: string;
+//   priority: string;
+// }
 
 export interface LeadDetails {
   id: string;

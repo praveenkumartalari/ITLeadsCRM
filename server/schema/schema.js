@@ -86,17 +86,17 @@ const insertInteractionSchema = z.object({
   metadata: z.record(z.string(), z.any()).optional()
 });
 
-const taskSchema = z.object({
-    title: z.string().min(3, "Title must be at least 3 characters"),
-    description: z.string().optional(),
-    dueDate: z.string().datetime(),
-    priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
-    type: z.enum(['CALL', 'MEETING', 'EMAIL', 'FOLLOW_UP', 'OTHER']),
-    leadId: z.string().uuid(),
-    assignedToId: z.string().uuid().optional(),
-    sourceInteractionId: z.string().uuid().optional()
-});
 
+const taskSchema = z.object({
+  title: z.string().min(3, "Title must be at least 3 characters"),
+  description: z.string().optional(),
+  due_date: z.string().datetime({ offset: true }), // Expect ISO 8601 with timezone
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
+  type: z.enum(['CALL', 'MEETING', 'EMAIL', 'FOLLOW_UP', 'OTHER']),
+  lead_id: z.string().uuid(),
+  assigned_to_id: z.string().uuid().optional(),
+  source_interaction_id: z.string().uuid().optional(),
+});
 const taskStatuses = [
     'PENDING',
     'IN_PROGRESS',

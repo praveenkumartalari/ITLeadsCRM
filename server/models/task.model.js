@@ -1,36 +1,38 @@
 const db = require('../config/db');
 
 async function createTask(task) {
-    const result = await db.query(`
+    const result = await db.query(
+      `
         INSERT INTO tasks (
-            title,
-            description,
-            due_date,
-            priority,
-            status,
-            type,
-            lead_id,
-            assigned_to_id,
-            created_by_id,
-            created_at,
-            source_interaction_id
+          title,
+          description,
+          due_date,
+          priority,
+          status,
+          type,
+          lead_id,
+          assigned_to_id,
+          created_by_id,
+          created_at,
+          source_interaction_id
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, CURRENT_TIMESTAMP, $10)
         RETURNING *
-    `, [
+      `,
+      [
         task.title,
         task.description,
-        task.dueDate,
+        task.due_date || null, // Default to null if not provided, but ensure frontend sends it
         task.priority,
         task.status || 'PENDING',
         task.type,
-        task.leadId,
-        task.assignedToId,
-        task.createdById,
-        task.sourceInteractionId
-    ]);
+        task.lead_id,
+        task.assigned_to_id,
+        task.created_by_id,
+        task.source_interaction_id || null,
+      ]
+    );
     return result.rows[0];
-}
-
+  }
 async function getAllTasks() {
     const result = await db.query(`
         SELECT 

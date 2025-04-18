@@ -54,31 +54,39 @@ async function listLeadTasks(req, res) {
 
 async function createTask(req, res) {
     try {
-        const taskData = {
-            ...req.body,
-            createdById: req.user.id,
-            status: 'PENDING'
-        };
-
-        const task = await createTaskModel(taskData);
-        
-        res.status(201).json({
-            status: 201,
-            success: true,
-            message: 'Task created successfully',
-            data: task
-        });
+      const taskData = taskSchema.parse({
+        ...req.body,
+        created_by_id: req.user.id,
+        status: req.body.status || 'PENDING',
+      });
+      console.log('Task data after validation:', taskData);
+      const task = await createTaskModel(taskData);
+  
+      res.status(201).json({
+        status: 201,
+        success: true,
+        message: 'Task created successfully',
+        data: task,
+      });
     } catch (error) {
-        console.error('Error creating task:', error);
-        res.status(500).json({
-            status: 500,
-            success: false,
-            message: 'Internal Server Error',
-            error: { code: 'SERVER_ERROR', details: 'Error creating task' }
+      console.error('Error creating task:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          status: 400,
+          success: false,
+          message: 'Validation Error',
+          error: { code: 'VALIDATION_ERROR', details: error.errors },
         });
+      }
+      res.status(500).json({
+        status: 500,
+        success: false,
+        message: 'Internal Server Error',
+        error: { code: 'SERVER_ERROR', details: 'Error creating task' },
+      });
     }
-}
-
+  }
+  
 async function updateTask(req, res) {
     try {
         const taskId = req.params.taskId;
