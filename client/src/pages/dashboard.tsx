@@ -27,7 +27,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">2,853</div>
-            <p className="text-xs text-gray-500">+18% from last month</p>
+            <p className="text-xs text-green-500">+18% from last month</p>
             <Progress value={65} className="h-1 mt-2" />
           </CardContent>
         </Card>
@@ -39,7 +39,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">1,264</div>
-            <p className="text-xs text-gray-500">+7% from last month</p>
+            <p className="text-xs text-green-500">+7% from last month</p>
             <Progress value={45} className="h-1 mt-2" />
           </CardContent>
         </Card>
@@ -51,7 +51,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">18.2%</div>
-            <p className="text-xs text-gray-500">+2.4% from last month</p>
+            <p className="text-xs text-green-500">+2.4% from last month</p>
             <Progress value={18} className="h-1 mt-2" />
           </CardContent>
         </Card>
@@ -63,7 +63,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">42</div>
-            <p className="text-xs text-gray-500">12 urgent tasks</p>
+            <p className="text-xs text-red-500">12 urgent tasks</p>
             <Progress value={75} className="h-1 mt-2" />
           </CardContent>
         </Card>

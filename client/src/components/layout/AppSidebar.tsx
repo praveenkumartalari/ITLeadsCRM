@@ -15,8 +15,6 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import MainLogo from "@/assets/Logos/Calibrage_MainLogo.png";
-import Logo from "@/assets/Logos/Calibrage_Logo.png";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,7 +40,7 @@ const navItems = [
   { title: "Settings", href: "/settings", icon: Settings },
 ];
 
-export function AppSidebar() {
+export function AppSidebar({ onToggleCollapse }: { onToggleCollapse: (collapsed: boolean) => void }) {
   const [collapsed, setCollapsed] = useState(false);
   const [user, setUser] = useState<{ id: string; username: string; email: string; role: string } | null>(null);
   const [loading, setLoading] = useState(true);
@@ -84,12 +82,20 @@ export function AppSidebar() {
     }
   };
 
+  const handleToggleCollapse = () => {
+    setCollapsed((prev) => {
+      const newCollapsed = !prev;
+      onToggleCollapse(newCollapsed); // Notify parent of new collapsed state
+      return newCollapsed;
+    });
+  };
+
   if (loading) return null;
 
   return (
     <div
       className={cn(
-        "h-[calc(100vh-57px)] border-r bg-orange-500 flex flex-col transition-all duration-300 ease-in-out",
+        "fixed left-0 top-[60px] h-[calc(100vh-60px)] border-r bg-white flex flex-col transition-all duration-300 ease-in-out z-10",
         collapsed ? "w-16" : "w-64"
       )}
       aria-label="Main navigation sidebar"
@@ -98,19 +104,19 @@ export function AppSidebar() {
         {!collapsed && (
           <div className="flex items-center gap-2 animate-fadeIn">
             <div className="flex flex-col">
-              <h1 className="text-white font-bold text-xl tracking-tight">
-                Smart<span className="text-brand-100">Lead</span>
+              <h1 className="text-orange-500 font-bold text-xl tracking-tight">
+                Smart <span className="text-orange-400">Lead</span>
               </h1>
-              <div className="h-0.5 w-full bg-gradient-to-r from-white to-transparent rounded-full"></div>
+             
             </div>
           </div>
         )}
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setCollapsed((prev) => !prev)}
+          onClick={handleToggleCollapse}
           className={cn(
-            "h-8 w-8 rounded-full hover:bg-orange-600 text-white transition-all duration-300",
+            "h-8 w-8 rounded-full hover:text-orange-400 text-gray-800 transition-all duration-300",
             collapsed && "mx-auto"
           )}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -131,14 +137,14 @@ export function AppSidebar() {
                 <Link
                   to={item.href}
                   className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 relative group hover:shadow-sm",
+                    "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 relative group ",
                     location.pathname === item.href
-                      ? "bg-orange-400 text-white"
-                      : "text-white hover:bg-orange-600"
+                      ? "bg-white text-orange-500 "
+                      : "text-gray-800 hover:text-orange-500"
                   )}
                   aria-label={item.title}
                 >
-                  <item.icon size={20} className="transition-transform duration-200 group-hover:text-orange-100" />
+                  <item.icon size={20} className="transition-transform duration-200 group-hover:text-orange-400" />
                   {!collapsed && <span className="transition-opacity duration-200">{item.title}</span>}
                 </Link>
               </HoverCardTrigger>
@@ -157,7 +163,7 @@ export function AppSidebar() {
         </nav>
       </div>
 
-      <Separator className="my-2 bg-white/80 h-[2px] flex-shrink-0" />
+      <Separator className="my-2 bg-orange-600 h-[2px] flex-shrink-0" />
 
       <div className="p-4 flex-shrink-0">
         <DropdownMenu>
@@ -169,8 +175,8 @@ export function AppSidebar() {
                   <AvatarFallback>{user?.username.slice(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div className="transition-opacity duration-300">
-                  <p className="text-sm font-medium text-white">{user?.username}</p>
-                  <p className="text-xs text-gray-200">{user?.role}</p>
+                  <p className="text-sm font-medium text-gray-800">{user?.username}</p>
+                  <p className="text-xs text-orange-400">{user?.role}</p>
                 </div>
               </div>
             ) : (
